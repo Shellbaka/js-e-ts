@@ -69,7 +69,6 @@ const sistema = (function () {
         salvarSenhasLocal();
 
         painelSenhas.push(senhaObj.senha);
-        if (painelSenhas.length > 5) painelSenhas.shift();
         painel.innerText = painelSenhas.join(" | ");
     }
 
