@@ -22,7 +22,7 @@ interface SenhaEmAtendimento {
     senha: Senha;
     guiche: string;
     inicio: Date;
-    tempoEstimado: number; // em segundos
+    tempoEstimado: number;
 }
 
 export default function AtendentePage() {
@@ -37,7 +37,6 @@ export default function AtendentePage() {
     const [senhasAtendidas, setSenhasAtendidas] = useState<Senha[]>([]);
     const [atualizandoLista, setAtualizandoLista] = useState(false);
 
-    // Verificar horário de funcionamento (7h às 17h)
     useEffect(() => {
         const verificarHorario = () => {
             const agora = new Date();
@@ -47,17 +46,15 @@ export default function AtendentePage() {
         };
 
         verificarHorario();
-        const intervalo = setInterval(verificarHorario, 60000); // Verifica a cada minuto
+        const intervalo = setInterval(verificarHorario, 60000);
 
         return () => clearInterval(intervalo);
     }, []);
 
-    // Função para buscar senhas
     const buscarSenhas = useCallback(async () => {
         try {
             setAtualizandoLista(true);
 
-            // Buscar senhas não atendidas
             const respostaNaoAtendidas = await fetch('/api/senhas?status=NAO_ATENDIDA');
             if (!respostaNaoAtendidas.ok) {
                 throw new Error('Erro ao buscar senhas em espera');
@@ -65,35 +62,31 @@ export default function AtendentePage() {
             const senhasNaoAtendidas = await respostaNaoAtendidas.json();
             setSenhasEmEspera(senhasNaoAtendidas);
 
-            // Buscar senhas em atendimento para este guichê
             const respostaEmAtendimento = await fetch(`/api/senhas?status=EM_ATENDIMENTO&guiche=Guichê ${guicheSelecionado}`);
             if (!respostaEmAtendimento.ok) {
                 throw new Error('Erro ao buscar senha em atendimento');
             }
             const senhasEmAtendimento = await respostaEmAtendimento.json();
 
-            // Se já tem uma senha em atendimento neste guichê
             if (senhasEmAtendimento.length > 0) {
                 const senhaAtualDoGuiche = senhasEmAtendimento[0];
                 setSenhaAtual({
                     senha: senhaAtualDoGuiche,
                     guiche: `Guichê ${guicheSelecionado}`,
                     inicio: senhaAtualDoGuiche.dataChamada ? new Date(senhaAtualDoGuiche.dataChamada) : new Date(),
-                    tempoEstimado: calcularTempoAtendimento(senhaAtualDoGuiche.tipo) * 60 // convertendo para segundos
+                    tempoEstimado: calcularTempoAtendimento(senhaAtualDoGuiche.tipo) * 60
                 });
             } else if (senhaAtual) {
-                // Se não tem mais senha em atendimento, limpar estado
                 setSenhaAtual(null);
             }
 
-            // Buscar últimas senhas atendidas hoje
             const hoje = new Date().toISOString().split('T')[0];
             const respostaAtendidas = await fetch(`/api/senhas?status=ATENDIDA&data=${hoje}`);
             if (!respostaAtendidas.ok) {
                 throw new Error('Erro ao buscar senhas atendidas');
             }
             const todasSenhasAtendidas = await respostaAtendidas.json();
-            setSenhasAtendidas(todasSenhasAtendidas.slice(0, 5)); // últimas 5
+            setSenhasAtendidas(todasSenhasAtendidas.slice(0, 5));
 
         } catch (error) {
             console.error('Erro ao buscar senhas:', error);
@@ -107,11 +100,9 @@ export default function AtendentePage() {
         }
     }, [guicheSelecionado, senhaAtual]);
 
-    // Carregar senhas ao montar o componente e quando mudar o guichê
     useEffect(() => {
         buscarSenhas();
 
-        // Atualizar a cada 60 segundos (aumentado de 30 para 60)
         const intervalo = setInterval(() => {
             buscarSenhas();
         }, 60000);
@@ -119,17 +110,15 @@ export default function AtendentePage() {
         return () => clearInterval(intervalo);
     }, [buscarSenhas]);
 
-    // Função para determinar o tempo médio de atendimento com base no tipo de senha
     const calcularTempoAtendimento = (tipo: 'SP' | 'SG' | 'SE'): number => {
         switch (tipo) {
-            case 'SP': return 15; // 15 minutos
-            case 'SG': return 5;  // 5 minutos
-            case 'SE': return 1;  // 1 minuto
+            case 'SP': return 15;
+            case 'SG': return 5;
+            case 'SE': return 1;
             default: return 5;
         }
     };
 
-    // Lógica para chamar a próxima senha
     const chamarProximaSenha = async () => {
         if (!horarioFuncionamento) {
             setMensagem({
