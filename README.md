@@ -158,3 +158,10 @@ Este projeto está licenciado sob a MIT License.
 - [TypeScript Documentation](https://www.typescriptlang.org/docs/)
 - [Prisma Documentation](https://www.prisma.io/docs/)
 
+## Mentes envolvidas no projeto, responsáveis pela criação e prototipação do código.
+ ### São eles :
+- Matheus Marques 
+- Kewen Wesley
+- Daniel Lucas
+- Renan Oliveira
+- Renan Argolo
