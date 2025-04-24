@@ -56,9 +56,32 @@ const sistema = (function () {
         }
     }
 
+    function tipoParaTempo(tipo) {
+        if (tipo === 'SP') return '15 min';
+        if (tipo === 'SG') return '5 min';
+        if (tipo === 'SE') return '1 min';
+        return '-';
+    }
+
     function chamarSenha() {
-        const prioridade = definirPrioridade();
-        const senhaObj = senhas.find(s => s.tipo === prioridade && s.status === "Não atendida");
+        // 95% de chance de tentar chamar uma senha
+        if (Math.random() > 0.95) return; // 5% de falha proposital
+
+        const tiposPrioridade = ['SP', 'SG', 'SE'];
+        let prioridade = definirPrioridade();
+
+        // Primeiro tenta pelo tipo prioritário
+        let senhaObj = senhas.find(s => s.tipo === prioridade && s.status === "Não atendida");
+
+        // Se não encontrar, tenta outras senhas disponíveis em ordem de prioridade
+        if (!senhaObj) {
+            for (let tipo of tiposPrioridade) {
+                senhaObj = senhas.find(s => s.tipo === tipo && s.status === "Não atendida");
+                if (senhaObj) break;
+            }
+        }
+
+        // Se ainda assim não tiver senha, encerra
         if (!senhaObj) return;
 
         senhaObj.status = "Atendida";
@@ -70,13 +93,6 @@ const sistema = (function () {
 
         painelSenhas.push(senhaObj.senha);
         painel.innerText = painelSenhas.join(" | ");
-    }
-
-    function tipoParaTempo(tipo) {
-        if (tipo === 'SP') return '15 min';
-        if (tipo === 'SG') return '5 min';
-        if (tipo === 'SE') return '1 min';
-        return '-';
     }
 
     return {
@@ -96,6 +112,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("btnCliente").addEventListener("click", () => {
         sistema.pedirSenha();
-        sistema.chamarSenha(); // 
+        sistema.chamarSenha();
     });
 });
