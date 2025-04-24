@@ -64,16 +64,12 @@ const sistema = (function () {
     }
 
     function chamarSenha() {
-        // 95% de chance de tentar chamar uma senha
-        if (Math.random() > 0.95) return; // 5% de falha proposital
 
         const tiposPrioridade = ['SP', 'SG', 'SE'];
         let prioridade = definirPrioridade();
 
-        // Primeiro tenta pelo tipo prioritário
         let senhaObj = senhas.find(s => s.tipo === prioridade && s.status === "Não atendida");
 
-        // Se não encontrar, tenta outras senhas disponíveis em ordem de prioridade
         if (!senhaObj) {
             for (let tipo of tiposPrioridade) {
                 senhaObj = senhas.find(s => s.tipo === tipo && s.status === "Não atendida");
@@ -81,7 +77,6 @@ const sistema = (function () {
             }
         }
 
-        // Se ainda assim não tiver senha, encerra
         if (!senhaObj) return;
 
         senhaObj.status = "Atendida";
